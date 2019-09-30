@@ -7,17 +7,27 @@
 #include<algorithm>
 #include<chrono>
 
+/*
+LICENSE INFO:
+Free to use for anyone who finds it.
+*/
+
 namespace fs = std::filesystem; // c++17
 namespace chrono = std::chrono;
 
 //====== DEFAULTS ====================
-static std::string ffmpeg_exe_dir = "C:\\ffmpeg\\ffmpeg-4.2.1-win64-static\\bin\\";
 static std::string in_file_ext = ".mp3";
 static std::string in_src_dir = fs::current_path().string();
 static std::string in_base_name = "split";
 static std::string in_dst_dir = in_src_dir + "\\" + in_base_name;
 static unsigned in_segment_sec = 600;
 
+// Windows file path
+// Or add ffmpeg to PATH and change ffmpeg_ext_dir to "ffmpeg"
+// Should work for Linux as well (not tested)
+static std::string ffmpeg_exe_dir = "C:\\ffmpeg\\ffmpeg-4.2.1-win64-static\\bin\\";
+
+// forward declare
 void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned segment_sec);
 std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
 void get_inputs();
@@ -82,6 +92,7 @@ int main() {
 
 //===================================
 
+// display the inputs that the user chose/confirmed
 void show_inputs() {
 	std::cout << "          ffmpeg location: " << ffmpeg_exe_dir << "\n";
 	std::cout << "           file extension: " << in_file_ext << "\n";
@@ -91,14 +102,17 @@ void show_inputs() {
 	std::cout << "file segment length (sec): " << in_segment_sec << "\n";
 }
 
+// returns true if a string is empty or only contains whitespace
 bool str_is_blank(std::string const& str) {
-	return std::all_of(str.begin(), str.end(), isspace);
+	return str.empty() || std::all_of(str.begin(), str.end(), isspace);
 }
 
+// returns true if a string represents and unsigned int
 bool str_is_unsigned(std::string const& str) {
 	return std::all_of(str.begin(), str.end(), isdigit);
 }
 
+// checks if a string ends with another string
 bool str_ends_with(std::string const& full_string, std::string const& end) {
 	if (full_string.length() < end.length())
 		return false;
@@ -106,11 +120,13 @@ bool str_ends_with(std::string const& full_string, std::string const& end) {
 	return full_string.compare(full_string.length() - end.length(), end.length(), end) == 0;
 }
 
+// appends sub file/directory to a directory path string
 std::string str_append_sub(std::string const& parent_dir, std::string const& sub) {
 	auto slash = std::string("\\");
 	return str_ends_with(parent_dir, slash) ? parent_dir + sub : parent_dir + slash + sub;
 }
 
+// prompt the user for required inputs
 void get_inputs() {
 
 	std::string str;
@@ -149,6 +165,7 @@ void get_inputs() {
 
 }
 
+// returns console output of a system command as a string
 std::string out_from_command(std::string cmd) {
 
 	std::string data;
@@ -169,7 +186,7 @@ std::string out_from_command(std::string cmd) {
 #endif
 
 #ifdef linux
-
+	// not tested
 	stream = popen(cmd.c_str(), "r");
 	if (stream) {
 		while (!feof(stream))
@@ -181,7 +198,10 @@ std::string out_from_command(std::string cmd) {
 	return data;
 }
 
+// gets the duration in seconds from a media file
 double get_seconds(std::string const& file_path) {
+	// ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 in_file.mp3
+
 	constexpr auto cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ";
 
 	auto command = ffmpeg_exe_dir + cmd + "\"" + file_path + "\"";
@@ -191,13 +211,15 @@ double get_seconds(std::string const& file_path) {
 	return atof(str.c_str());
 }
 
-unsigned num_digits(size_t number) {
+// gets the number of digits in an unsigned int
+unsigned num_digits(unsigned number) {
 
-	char size_str[100];
-	sprintf_s(size_str, "%d", number);
-	return strlen(size_str);
+	char buffer[100];
+	sprintf_s(buffer, "%d", number);
+	return strlen(buffer);
 }
 
+// determines the number files a source file needs to be split into
 unsigned num_split_files(double src_duration, double split_duration) {
 
 	if (src_duration <= split_duration)
@@ -212,7 +234,7 @@ unsigned num_split_files(double src_duration, double split_duration) {
 }
 
 
-
+// splits a media file into chunks of a given duration
 void split_single(std::string const& src_file_path, std::string const& dst_full_path_base, unsigned segment_sec) {
 	// ffmpeg -i "input_audio_file.mp3" -f segment -segment_time 3600 -c copy output_audio_file_%03d.mp3
 
@@ -228,7 +250,7 @@ void split_single(std::string const& src_file_path, std::string const& dst_full_
 }
 
 
-
+// splits a number of files into chunks of a given duration
 void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned segment_sec) {
 	if (src_files.empty())
 		return;
@@ -242,6 +264,7 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	unsigned idx = 1;
 	char idx_str[100];
 
+	// timestamp used for temp file names
 	auto ms = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
 
 	// split each file with temp names
@@ -249,7 +272,7 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	auto temp_tag = std::to_string(ms) + "_temp_";
 	auto temp_path_base = str_append_sub(dst_dir, temp_tag);
 	for (auto const& file_path : src_files) {
-		sprintf_s(idx_str, "%0*d", idx_len, idx++);
+		sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
 
 		auto temp_path = temp_path_base + idx_str;
 		split_single(file_path, temp_path, segment_sec);
@@ -288,6 +311,8 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 
 }
 
+// returns all files in a directory with a given extension
+// be careful pre c++11
 std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension) {
 
 	// extenstion must begin with '.'
