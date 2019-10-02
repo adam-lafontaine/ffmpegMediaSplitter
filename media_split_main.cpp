@@ -272,7 +272,7 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	auto const temp_tag = std::to_string(ms) + "_temp_";
 	auto const temp_path_base = str_append_sub(dst_dir, temp_tag);
 
-	auto const split_file = [&](std::string const& file_path) {
+	auto split_file = [&](std::string const& file_path) {
 		sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
 		auto temp_path = temp_path_base + idx_str;
 		split_single(file_path, temp_path, segment_sec);
@@ -291,16 +291,18 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	//	memset(idx_str, 0, strlen(idx_str));
 	//}
 
+	auto const entry_match = [&](fs::path const& entry) {
+		return fs::is_regular_file(entry) &&
+			entry.has_extension() &&
+			entry.extension() == in_file_ext &&
+			entry.filename().string()._Starts_with(temp_tag);
+	};
 
 	// get all of the files created
 	std::vector<std::string> file_list;
 	for (auto const& entry : fs::directory_iterator(dst_dir)) {
-		auto const path = entry.path();
-		auto const name = entry.path().filename();
-		if (path.extension() != in_file_ext || !name.string()._Starts_with(temp_tag))
-			continue;
-
-		file_list.push_back(path.string());
+		if (entry_match(entry))
+			file_list.push_back(entry.path().string());
 	}
 
 	// sort alphabetically
@@ -315,7 +317,7 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 		sprintf_s(idx_str, "%0*d", idx_len, idx++);
 		auto const new_path = base_dir + "_" + idx_str + in_file_ext;
 		auto result = rename(file_path.c_str(), new_path.c_str());
-		memset(idx_str, 0, strlen(idx_str));	
+		memset(idx_str, 0, strlen(idx_str));
 	};
 
 	std::for_each(file_list.begin(), file_list.end(), rename_file);
@@ -343,17 +345,15 @@ std::vector<std::string> get_files_of_type(std::string const& src_dir, std::stri
 
 	std::vector<std::string> file_list;
 
-	auto func = [&](auto const& entry) { 
-		if(entry.path().extension() == extension)
-			file_list.push_back(entry.path()); 
+	auto const entry_match = [&](fs::path const& entry) {
+		return fs::is_regular_file(entry) &&
+			entry.has_extension() &&
+			entry.extension() == extension;
 	};
 	
 	for (auto const& entry : fs::directory_iterator(src_dir)) {
-		auto path = entry.path();
-		if (path.extension() != extension)
-			continue;
-
-		file_list.push_back(path.string());
+		if(entry_match(entry))
+			file_list.push_back(entry.path().string());		
 	}
 
 	return file_list;
