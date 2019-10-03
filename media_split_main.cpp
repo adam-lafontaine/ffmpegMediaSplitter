@@ -244,7 +244,7 @@ void split_single(std::string const& src_file_path, std::string const& dst_full_
 
 	auto const command = ffmpeg_exe_dir + "ffmpeg -i " + "\"" + src_file_path + "\""
 		+ " -f segment -segment_time " + std::to_string(segment_sec)
-		+ " -c copy " + +"\"" + dst_full_path_base + "\"" + "_%0" + std::to_string(digits) + "d.mp3";
+		+ " -c copy " + +"\"" + dst_full_path_base + "\"" + "_%0" + std::to_string(digits) + "d" + in_file_ext;
 
 	system(command.c_str());
 }
@@ -265,11 +265,13 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	char idx_str[100];
 
 	// timestamp used for temp file names
-	auto const ms = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+	auto const ms = std::to_string(
+		chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count()
+	);
 
 	// split each file with temp names
 	// ffmpeg naming scheme is zero based
-	auto const temp_tag = std::to_string(ms) + "_temp_";
+	auto const temp_tag = "ffmpeg_" + ms.substr(ms.length() - 5) + "_temp_";
 	auto const temp_path_base = str_append_sub(dst_dir, temp_tag);
 
 	auto split_file = [&](std::string const& file_path) {
@@ -312,17 +314,6 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	};
 
 	std::for_each(file_list.begin(), file_list.end(), rename_file);
-
-
-	/*for (auto const& file_path : file_list) {
-		sprintf_s(idx_str, "%0*d", idx_len, idx++);
-
-		auto new_path = base_dir + "_" + idx_str + in_file_ext;
-
-		auto result = rename(file_path.c_str(), new_path.c_str());
-
-		memset(idx_str, 0, strlen(idx_str));
-	}*/
 
 }
 
