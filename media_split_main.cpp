@@ -114,8 +114,6 @@ bool str_is_unsigned(std::string const& str) {
 
 // checks if a string ends with another string
 bool str_ends_with(std::string const& full_string, std::string const& end) {
-	if (full_string.length() < end.length())
-		return false;
 
 	return end.length() >= full_string.length() &&
 		full_string.compare(full_string.length() - end.length(), end.length(), end) == 0;
