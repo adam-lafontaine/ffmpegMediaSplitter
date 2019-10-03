@@ -274,22 +274,13 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 
 	auto split_file = [&](std::string const& file_path) {
 		sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
-		auto temp_path = temp_path_base + idx_str;
+		auto const temp_path = temp_path_base + idx_str;
 		split_single(file_path, temp_path, segment_sec);
 		memset(idx_str, 0, strlen(idx_str));
 	};
 
 	std::for_each(src_files.begin(), src_files.end(), split_file);
 
-
-	//for (auto const& file_path : src_files) {
-	//	sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
-
-	//	auto temp_path = temp_path_base + idx_str;
-	//	split_single(file_path, temp_path, segment_sec);
-
-	//	memset(idx_str, 0, strlen(idx_str));
-	//}
 
 	auto const entry_match = [&](fs::path const& entry) {
 		return fs::is_regular_file(entry) &&
