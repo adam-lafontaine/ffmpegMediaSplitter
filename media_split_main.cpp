@@ -15,23 +15,26 @@ Free to use for anyone who finds it.
 namespace fs = std::filesystem; // c++17
 namespace chrono = std::chrono;
 
+// forward declare
+void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned const segment_sec);
+std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
+void get_inputs();
+void show_inputs();
+std::string str_append_sub(std::string const& parent_dir, std::string const& sub);
+
 //====== DEFAULTS ====================
 static std::string in_file_ext = ".mp3";
 static std::string in_src_dir = fs::current_path().string();
 static std::string in_base_name = "split";
-static std::string in_dst_dir = in_src_dir + "\\" + in_base_name;
+static std::string in_dst_dir = str_append_sub(in_src_dir, in_base_name);
 static unsigned in_segment_sec = 600;
 
 // Windows file path
 // Or add ffmpeg to PATH and change ffmpeg_ext_dir to "ffmpeg"
 // Should work for Linux as well (not tested)
-static std::string ffmpeg_exe_dir = "C:\\ffmpeg\\ffmpeg-4.2.1-win64-static\\bin\\";
+static std::string ffmpeg_exe_dir = R"(C:\ffmpeg\ffmpeg-4.2.1-win64-static\bin\)";
 
-// forward declare
-void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned segment_sec);
-std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
-void get_inputs();
-void show_inputs();
+
 
 
 int main() {
@@ -166,13 +169,13 @@ void get_inputs() {
 }
 
 // returns console output of a system command as a string
-std::string out_from_command(std::string cmd) {
+std::string out_from_command(std::string const& command) {
 
 	std::string data;
 	FILE* stream;
 	const int max_buffer = 256;
 	char buffer[max_buffer];
-	cmd.append(" 2>&1");
+	auto const cmd = command + " 2>&1";
 
 #ifdef _WIN32
 
@@ -249,7 +252,7 @@ void split_single(std::string const& src_file_path, std::string const& dst_full_
 
 
 // splits a number of files into chunks of a given duration
-void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned segment_sec) {
+void split_multiple(std::vector<std::string>& src_files, std::string const& dst_dir, std::string const& dst_base_file, unsigned const segment_sec) {
 	if (src_files.empty())
 		return;
 	
@@ -307,7 +310,7 @@ void split_multiple(std::vector<std::string>& src_files, std::string const& dst_
 	auto const rename_file = [&](std::string const& file_path) {
 		sprintf_s(idx_str, "%0*d", idx_len, idx++);
 		auto const new_path = base_dir + "_" + idx_str + in_file_ext;
-		auto result = rename(file_path.c_str(), new_path.c_str());
+		auto const result = rename(file_path.c_str(), new_path.c_str());
 		memset(idx_str, 0, strlen(idx_str));
 	};
 
