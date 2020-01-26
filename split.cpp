@@ -92,7 +92,8 @@ namespace split {
 		auto const num_out_files = num_split_files(src_duration, segment_sec);
 		auto const digits = num_digits(num_out_files);
 
-		auto const command = ffmpeg_exe_dir + "ffmpeg -i " + src_file_path
+		auto const command = 
+			ffmpeg_exe_dir + "ffmpeg -i " + src_file_path
 			+ " -f segment -segment_time " + std::to_string(segment_sec)
 			+ " -c copy " + dst_full_path_base + "_%0" + std::to_string(digits) + "d" + file_ext;
 
@@ -159,23 +160,29 @@ namespace split {
 		std::sort(file_list.begin(), file_list.end());
 
 		// set track numbers and rename
-		/*for (auto const& file_path : file_list) {
-
-		}*/
-
-		// rename files
 		idx_len = num_digits(file_list.size());
 		idx = 1;
 		auto const base_dir = str::str_append_sub(dst_dir, dst_base_file);
+		for (auto const& file_path : file_list) {
 
-		auto const rename_file = [&](std::string const& file_path) {
+			// ffmpeg -i in.mp3 -metadata track="1/12" out.mp3
+
+			auto const track_part = " -metadata track=\""
+				+ std::to_string(idx) + "/" + std::to_string(file_list.size()) + "\" ";
+
 			sprintf_s(idx_str, "%0*d", idx_len, idx++);
 			auto const new_path = base_dir + "_" + idx_str + file_ext;
-			auto const result = rename(file_path.c_str(), new_path.c_str());
-			memset(idx_str, 0, strlen(idx_str));
-		};
 
-		std::for_each(file_list.begin(), file_list.end(), rename_file);
+			memset(idx_str, 0, strlen(idx_str));
+
+			auto const command =
+				ffmpeg_exe_dir + "ffmpeg -i " + file_path
+				+ track_part
+				+ new_path;			
+
+			system(command.c_str());
+			//auto const result = rename(file_path.c_str(), new_path.c_str());
+		}
 
 	}
 
