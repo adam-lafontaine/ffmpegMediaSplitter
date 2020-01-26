@@ -180,8 +180,11 @@ namespace split {
 				+ track_part
 				+ new_path;			
 
+			// create new file with track number and new name
 			system(command.c_str());
-			//auto const result = rename(file_path.c_str(), new_path.c_str());
+
+			// delete temp file
+			remove(file_path.c_str());
 		}
 
 	}
