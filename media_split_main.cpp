@@ -6,7 +6,7 @@
 #include<vector>
 
 
-
+#include "app_config.hpp"
 #include "str_helper.hpp"
 #include "split.hpp"
 #include "convert.hpp"
@@ -25,102 +25,104 @@ namespace cvt = convert;
 std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
 void get_inputs();
 void show_inputs();
+void run_program();
 
 //====== DEFAULTS ====================
-auto constexpr MP3_EXT = ".mp3";
-auto constexpr M4B_EXT = ".m4b";
-
 
 static std::string in_file_ext = MP3_EXT;
-static std::string in_src_dir = R"(C:\Users\Adam\source\repos\FFMPEG\Debug)"; // fs::current_path().string();
-static std::string in_base_name = "split";
-static std::string in_dst_dir = str::str_append_sub(in_src_dir, in_base_name);
-static unsigned in_segment_sec = 600;
-
-// Windows file path
-// Or add ffmpeg to PATH and change ffmpeg_ext_dir to "ffmpeg"
-// Should work for Linux as well (not tested)
-static std::string ffmpeg_exe_dir = R"(C:\ffmpeg\ffmpeg-4.2.1-win64-static\bin\)";
-
-
+static std::string in_src_dir = SRC_DIR_DEFAULT; // fs::current_path().string();
+static std::string in_base_name = FILE_NAME_BASE_DEFAULT;
+static std::string in_dst_dir;
+static unsigned in_segment_sec = SEGMENT_SEC_DEFAULT;
+static std::string ffmpeg_exe_dir = FFMPEG_EXE_DIR;
 
 
 int main() {
-	bool prompt = true;
-	bool quit = false;
-	std::string selection;
+	
 
 	try
 	{
-		while (prompt && !quit) {
-			get_inputs();
-
-			std::cout << "\n";
-			show_inputs();
-
-			std::cout << "\n";
-
-			int c;
-			do {
-				std::cout << "OK? (y/n), Quit (q): ";
-
-				std::getline(std::cin, selection);
-				c = tolower(selection[0]);
-
-			} while (c != 'y' && c != 'n' && c != 'q');	
-			
-			switch (c)
-			{
-			case 'q':
-				quit = true;
-				break;
-			case 'y':
-				prompt = false;
-				break;
-
-			default:
-				std::cout << "\n";
-				break;
-			}
-
-		}		
-
-		if (quit)
-			return EXIT_SUCCESS;
-
-		std::cout << "\n";
-		
-		auto file_list = get_files_of_type(in_src_dir, in_file_ext);
-		fs::create_directories(in_dst_dir);
-
-		auto out_file_ext = in_file_ext;
-		bool converted = false;
-		auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
-
-		if (out_file_ext == M4B_EXT) { // if m4b, convert everything to mp3
-			out_file_ext = MP3_EXT;
-			converted = true;
-
-			fs::create_directory(temp_dst);
-
-			cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
-		}		
-
-		split::split_multiple(ffmpeg_exe_dir, file_list, in_dst_dir, in_base_name, out_file_ext, in_segment_sec);
-
-		if (converted) { // get rid of the converted files
-
-			fs::remove_all(temp_dst);
-		}
+		run_program();
 	}
 	catch (std::exception& e)
 	{
 		std::cout << e.what();
+		return EXIT_FAILURE;
 	}
 
 }
 
 //===================================
+
+void run_program() {
+
+	bool prompt = true;
+	bool quit = false;
+	std::string selection;
+
+	while (prompt && !quit) {
+		get_inputs();
+
+		std::cout << "\n";
+		show_inputs();
+
+		std::cout << "\n";
+
+		int c;
+		do {
+			std::cout << "OK? (y/n), Quit (q): ";
+
+			std::getline(std::cin, selection);
+			c = tolower(selection[0]);
+
+		} while (c != 'y' && c != 'n' && c != 'q');
+
+		switch (c)
+		{
+		case 'q':
+			quit = true;
+			break;
+		case 'y':
+			prompt = false;
+			break;
+
+		default:
+			std::cout << "\n";
+			break;
+		}
+
+	}
+
+	if (quit)
+		return;
+
+	std::cout << "\n";
+
+	auto file_list = get_files_of_type(in_src_dir, in_file_ext);
+	fs::create_directories(in_dst_dir);
+
+	auto out_file_ext = in_file_ext;
+	bool converted = false;
+	auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
+
+	if (out_file_ext == M4B_EXT) { // if m4b, convert everything to mp3
+		out_file_ext = MP3_EXT;
+		converted = true;
+
+		fs::create_directory(temp_dst);
+
+		cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
+	}
+
+	split::split_multiple(ffmpeg_exe_dir, file_list, in_dst_dir, in_base_name, out_file_ext, in_segment_sec);
+
+	if (converted) { // get rid of the converted files
+
+		fs::remove_all(temp_dst);
+	}
+
+
+}
 
 // display the inputs that the user chose/confirmed
 void show_inputs() {
