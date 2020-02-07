@@ -32,7 +32,7 @@ auto constexpr M4B_EXT = ".m4b";
 
 
 static std::string in_file_ext = MP3_EXT;
-static std::string in_src_dir = fs::current_path().string();
+static std::string in_src_dir = R"(C:\Users\Adam\source\repos\FFMPEG\Debug)"; // fs::current_path().string();
 static std::string in_base_name = "split";
 static std::string in_dst_dir = str::str_append_sub(in_src_dir, in_base_name);
 static unsigned in_segment_sec = 600;

@@ -92,9 +92,10 @@ namespace split {
 		auto const num_out_files = num_split_files(src_duration, segment_sec);
 		auto const digits = num_digits(num_out_files);
 
-		auto const command = ffmpeg_exe_dir + "ffmpeg -i " + "\"" + src_file_path + "\""
+		auto const command = 
+			ffmpeg_exe_dir + "ffmpeg -i " + "\"" + src_file_path + "\""
 			+ " -f segment -segment_time " + std::to_string(segment_sec)
-			+ " -c copy " + +"\"" + dst_full_path_base + "\"" + "_%0" + std::to_string(digits) + "d" + file_ext;
+			+ " -c copy " + "\"" + dst_full_path_base + "\"" + "_%0" + std::to_string(digits) + "d" + file_ext;
 
 		system(command.c_str());
 	}
@@ -131,14 +132,12 @@ namespace split {
 		auto const temp_tag = "ffmpeg_" + ms.substr(ms.length() - 5) + "_temp_";
 		auto const temp_path_base = str::str_append_sub(dst_dir, temp_tag);
 
-		auto split_file = [&](std::string const& file_path) {
+		for (auto const& file_path : src_files) {
 			sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
 			auto const temp_path = temp_path_base + idx_str;
 			split_single(ffmpeg_exe_dir, file_path, temp_path, file_ext, segment_sec);
 			memset(idx_str, 0, strlen(idx_str));
-		};
-
-		std::for_each(src_files.begin(), src_files.end(), split_file);
+		}
 
 
 		auto const entry_match = [&](fs::path const& entry) {
@@ -158,19 +157,33 @@ namespace split {
 		// sort alphabetically
 		std::sort(file_list.begin(), file_list.end());
 
-		// rename files
+		// set track numbers and rename
 		idx_len = num_digits(file_list.size());
 		idx = 1;
 		auto const base_dir = str::str_append_sub(dst_dir, dst_base_file);
+		for (auto const& file_path : file_list) {
 
-		auto const rename_file = [&](std::string const& file_path) {
+			// ffmpeg -i in.mp3 -metadata track="1/12" out.mp3
+
+			auto const track_part = " -metadata track=\""
+				+ std::to_string(idx) + "/" + std::to_string(file_list.size()) + "\" ";
+
 			sprintf_s(idx_str, "%0*d", idx_len, idx++);
 			auto const new_path = base_dir + "_" + idx_str + file_ext;
-			auto const result = rename(file_path.c_str(), new_path.c_str());
-			memset(idx_str, 0, strlen(idx_str));
-		};
 
-		std::for_each(file_list.begin(), file_list.end(), rename_file);
+			memset(idx_str, 0, strlen(idx_str));
+
+			auto const command =
+				ffmpeg_exe_dir + "ffmpeg -i " + "\"" + file_path + "\""
+				+ track_part
+				+ "\"" + new_path + "\"";
+
+			// create new file with track number and new name
+			system(command.c_str());
+
+			// delete temp file
+			remove(file_path.c_str());
+		}
 
 	}
 
