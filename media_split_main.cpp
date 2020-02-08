@@ -2,7 +2,6 @@
 #include<exception>
 #include<iostream>
 #include<string>
-#include<math.h>
 #include<vector>
 
 
@@ -17,7 +16,6 @@ Free to use for anyone who finds it.
 */
 
 namespace fs = std::filesystem; // c++17
-namespace chrono = std::chrono;
 
 namespace str = str_helper;
 namespace cvt = convert;
@@ -64,7 +62,7 @@ bool split_files() {
 		bool converted = false;
 		auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
 
-		if (out_file_ext != MP3_EXT) { // convert everything to mp3
+		if (out_file_ext != MP3_EXT) { // try to convert everything to mp3
 			out_file_ext = MP3_EXT;
 			converted = true;
 

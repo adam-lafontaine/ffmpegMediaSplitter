@@ -182,7 +182,7 @@ namespace split {
 			system(command.c_str());
 
 			// delete temp file
-			remove(file_path.c_str());
+			fs::remove(file_path);
 		}
 
 	}
