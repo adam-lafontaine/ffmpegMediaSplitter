@@ -26,13 +26,13 @@ void show_inputs();
 bool prompt_user();
 bool split_files();
 
-//====== DEFAULTS ====================
+//====== DEFAULTS USER INPUTS ====================
 
-static std::string in_file_ext = MP3_EXT;
-static std::string in_src_dir = SRC_DIR_DEFAULT; // fs::current_path().string();
-static std::string in_base_name = FILE_NAME_BASE_DEFAULT;
-static std::string in_dst_dir;
-static unsigned in_segment_sec = SEGMENT_SEC_DEFAULT;
+static std::string file_ext = MP3_EXT;
+static std::string src_dir = fs::current_path().string();
+static std::string base_name = FILE_NAME_BASE_DEFAULT;
+static std::string dst_dir;
+static unsigned segment_sec = SEGMENT_SEC_DEFAULT;
 static std::string ffmpeg_exe_dir = FFMPEG_EXE_DIR;
 
 
@@ -43,10 +43,6 @@ int main() {
 
 	if (!split_files())
 		return EXIT_FAILURE;
-	
-
-	
-
 }
 
 //===================================
@@ -55,12 +51,12 @@ bool split_files() {
 
 	try
 	{
-		auto file_list = get_files_of_type(in_src_dir, in_file_ext);
-		fs::create_directories(in_dst_dir);
+		auto file_list = get_files_of_type(src_dir, file_ext);
+		fs::create_directories(dst_dir);
 
-		auto out_file_ext = in_file_ext;
+		auto out_file_ext = file_ext;
 		bool converted = false;
-		auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
+		auto temp_dst = str::str_append_sub(dst_dir, "convert_temp");
 
 		if (out_file_ext != MP3_EXT) { // try to convert everything to mp3
 			out_file_ext = MP3_EXT;
@@ -71,7 +67,7 @@ bool split_files() {
 			cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
 		}
 
-		split::split_multiple(ffmpeg_exe_dir, file_list, in_dst_dir, in_base_name, out_file_ext, in_segment_sec);
+		split::split_multiple(ffmpeg_exe_dir, file_list, dst_dir, base_name, out_file_ext, segment_sec);
 
 		if (converted) { // get rid of the converted files
 
@@ -133,11 +129,11 @@ bool prompt_user() {
 // display the inputs that the user chose/confirmed
 void show_inputs() {
 	std::cout << "          ffmpeg location: " << ffmpeg_exe_dir << "\n";
-	std::cout << "           file extension: " << in_file_ext << "\n";
-	std::cout << "            file location: " << in_src_dir << "\n";
-	std::cout << "            new file name: " << in_base_name << "\n";
-	std::cout << "        new file location: " << in_dst_dir << "\n";
-	std::cout << "file segment length (sec): " << in_segment_sec << "\n";
+	std::cout << "           file extension: " << file_ext << "\n";
+	std::cout << "            file location: " << src_dir << "\n";
+	std::cout << "            new file name: " << base_name << "\n";
+	std::cout << "        new file location: " << dst_dir << "\n";
+	std::cout << "file segment length (sec): " << segment_sec << "\n";
 }
 
 
@@ -152,32 +148,32 @@ void get_inputs() {
 	if (!str::str_is_blank(str) && fs::exists(str))
 		ffmpeg_exe_dir = str;
 
-	std::cout << "Enter file extension (" << in_file_ext <<"): ";
+	std::cout << "Enter file extension (" << file_ext <<"): ";
 	std::getline(std::cin, str);
 	if (!str::str_is_blank(str))
-		in_file_ext = str;
+		file_ext = str;
 
-	std::cout << "Enter file location (" << in_src_dir << "):\n";
+	std::cout << "Enter file location (" << src_dir << "):\n";
 	std::getline(std::cin, str);
 	if (!str::str_is_blank(str) && fs::exists(str))
-		in_src_dir = str;
+		src_dir = str;
 
-	std::cout << "Enter new file name (" << in_base_name << "): ";
+	std::cout << "Enter new file name (" << base_name << "): ";
 	std::getline(std::cin, str);
 	if (!str::str_is_blank(str))
-		in_base_name = str;
+		base_name = str;
 
-	in_dst_dir = str::str_append_sub(in_src_dir, in_base_name);
+	dst_dir = str::str_append_sub(src_dir, base_name);
 
-	std::cout << "Enter new file location (" << in_dst_dir << "):\n";
+	std::cout << "Enter new file location (" << dst_dir << "):\n";
 	std::getline(std::cin, str);
 	if (!str::str_is_blank(str))
-		in_dst_dir = str;
+		dst_dir = str;
 
-	std::cout << "Enter file segment length in seconds (" << in_segment_sec << "): ";
+	std::cout << "Enter file segment length in seconds (" << segment_sec << "): ";
 	std::getline(std::cin, str);
 	if (!str::str_is_blank(str) && str::str_is_unsigned(str))
-		in_segment_sec = atoi(str.c_str());	
+		segment_sec = atoi(str.c_str());	
 
 }
 
