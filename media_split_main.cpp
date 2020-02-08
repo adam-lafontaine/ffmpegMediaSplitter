@@ -25,7 +25,8 @@ namespace cvt = convert;
 std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
 void get_inputs();
 void show_inputs();
-void run_program();
+bool prompt_user();
+bool split_files();
 
 //====== DEFAULTS ====================
 
@@ -38,23 +39,57 @@ static std::string ffmpeg_exe_dir = FFMPEG_EXE_DIR;
 
 
 int main() {
+
+	if (!prompt_user())
+		return EXIT_SUCCESS;
+
+	if (!split_files())
+		return EXIT_FAILURE;
 	
 
-	try
-	{
-		run_program();
-	}
-	catch (std::exception& e)
-	{
-		std::cout << e.what();
-		return EXIT_FAILURE;
-	}
+	
 
 }
 
 //===================================
 
-void run_program() {
+bool split_files() {
+
+	try
+	{
+		auto file_list = get_files_of_type(in_src_dir, in_file_ext);
+		fs::create_directories(in_dst_dir);
+
+		auto out_file_ext = in_file_ext;
+		bool converted = false;
+		auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
+
+		if (out_file_ext != MP3_EXT) { // convert everything to mp3
+			out_file_ext = MP3_EXT;
+			converted = true;
+
+			fs::create_directory(temp_dst);
+
+			cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
+		}
+
+		split::split_multiple(ffmpeg_exe_dir, file_list, in_dst_dir, in_base_name, out_file_ext, in_segment_sec);
+
+		if (converted) { // get rid of the converted files
+
+			fs::remove_all(temp_dst);
+		}
+	}
+	catch (std::exception & e)
+	{
+		std::cout << e.what();
+		return false;
+	}
+
+	return true;
+}
+
+bool prompt_user() {
 
 	bool prompt = true;
 	bool quit = false;
@@ -84,6 +119,7 @@ void run_program() {
 			break;
 		case 'y':
 			prompt = false;
+			std::cout << "\n";
 			break;
 
 		default:
@@ -93,35 +129,7 @@ void run_program() {
 
 	}
 
-	if (quit)
-		return;
-
-	std::cout << "\n";
-
-	auto file_list = get_files_of_type(in_src_dir, in_file_ext);
-	fs::create_directories(in_dst_dir);
-
-	auto out_file_ext = in_file_ext;
-	bool converted = false;
-	auto temp_dst = str::str_append_sub(in_dst_dir, "convert_temp");
-
-	if (out_file_ext == M4B_EXT) { // if m4b, convert everything to mp3
-		out_file_ext = MP3_EXT;
-		converted = true;
-
-		fs::create_directory(temp_dst);
-
-		cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
-	}
-
-	split::split_multiple(ffmpeg_exe_dir, file_list, in_dst_dir, in_base_name, out_file_ext, in_segment_sec);
-
-	if (converted) { // get rid of the converted files
-
-		fs::remove_all(temp_dst);
-	}
-
-
+	return !quit;
 }
 
 // display the inputs that the user chose/confirmed
