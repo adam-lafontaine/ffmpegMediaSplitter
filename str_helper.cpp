@@ -25,6 +25,9 @@ namespace str_helper
 
 	}
 
+
+	
+
 	// appends sub file/directory to a directory path string
 	/*std::string str_append_sub(std::string const& parent_dir, std::string const& sub) 
 	{

@@ -24,8 +24,8 @@ namespace convert {
 	{
 		// ffmpeg -i "C:\path\to\input.m4b" -acodec libmp3lame -ar 22050 "C:\path\to\output.mp3"
 
-		auto const command = ffmpeg_exe_dir.string() + "ffmpeg -i " + "\"" + src_file_path.string() + "\""
-			+ " -acodec libmp3lame -ar 22050 " + "\"" + dst_file_path.string() + "\"";
+		auto const command = ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path)
+			+ " -acodec libmp3lame -ar 22050 " + str::quoted(dst_file_path);
 
 		system(command.c_str());
 	}
@@ -34,7 +34,7 @@ namespace convert {
 		fs::path const& ffmpeg_exe_dir,
 		std::vector<fs::path>& src_files,
 		fs::path const& dst_dir,
-		const char* out_ext)
+		std::string const& out_ext)
 	{
 		if (src_files.empty())
 			return;

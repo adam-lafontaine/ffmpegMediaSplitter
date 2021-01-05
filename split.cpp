@@ -51,7 +51,7 @@ namespace split {
 
 		constexpr auto cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ";
 
-		auto const command = ffmpeg_exe_dir + cmd + "\"" + file_path + "\"";
+		auto const command = ffmpeg_exe_dir + cmd + str::quoted(file_path);
 
 		return atof(out_from_command(command).c_str());
 	}
@@ -92,9 +92,9 @@ namespace split {
 		auto const digits = num_digits(num_out_files);
 
 		auto const command = 
-			ffmpeg_exe_dir.string() + "ffmpeg -i " + "\"" + src_file_path.string() + "\""
+			ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path)
 			+ " -f segment -segment_time " + std::to_string(segment_sec)
-			+ " -c copy " + "\"" + dst_full_path_base.string() + "\"" + "_%0" + std::to_string(digits) + "d" + file_ext;
+			+ " -c copy " + str::quoted(dst_full_path_base) + "_%0" + std::to_string(digits) + "d" + file_ext;
 
 		system(command.c_str());
 	}
@@ -167,8 +167,7 @@ namespace split {
 		{
 			// ffmpeg -i in.mp3 -metadata track="1/12" out.mp3
 
-			auto const track_part = " -metadata track=\""
-				+ std::to_string(idx) + "/" + std::to_string(file_list.size()) + "\" ";
+			auto const track_part = " -metadata track=" + str::quoted( std::to_string(idx) + "/" + std::to_string(file_list.size()) );				
 
 			sprintf_s(idx_str, "%0*d", idx_len, idx++);
 
@@ -179,9 +178,9 @@ namespace split {
 			memset(idx_str, 0, strlen(idx_str));
 
 			auto const command =
-				ffmpeg_exe_dir.string() + "ffmpeg -i " + "\"" + file_path.string() + "\""
+				ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(file_path)
 				+ track_part
-				+ "\"" + new_path.string() + "\"";
+				+ str::quoted(new_path);
 
 			// create new file with track number and new name
 			system(command.c_str());

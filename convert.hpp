@@ -12,5 +12,5 @@ namespace convert {
 		fs::path const& ffmpeg_exe_dir,
 		std::vector<fs::path>& src_files,
 		fs::path const& dst_dir,
-		const char* out_ext);
+		std::string const& out_ext);
 }
