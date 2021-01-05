@@ -2,15 +2,18 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
-namespace split {
+namespace fs = std::filesystem;
 
+namespace split 
+{
 	void split_multiple(
-		std::string const& ffmpeg_exe_dir,
-		std::vector<std::string>& src_files,
-		std::string const& dst_dir,
-		std::string const& dst_base_file,
-		std::string const& file_ext,
+		fs::path const& ffmpeg_exe_dir,
+		std::vector<fs::path>& src_files,
+		fs::path const& dst_dir,
+		fs::path const& dst_base_file,
+		fs::path const& file_ext,
 		unsigned const segment_sec);
 
 }

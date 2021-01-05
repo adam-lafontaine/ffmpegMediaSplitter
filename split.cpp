@@ -1,8 +1,9 @@
-#include <filesystem>
-#include <chrono>
-
 #include "split.hpp"
 #include "str_helper.hpp"
+
+#include <filesystem>
+#include <chrono>
+#include <algorithm>
 
 
 namespace split {
@@ -58,9 +59,7 @@ namespace split {
 	// gets the number of digits in an unsigned int
 	unsigned num_digits(unsigned const number) {
 
-		char buffer[100];
-		sprintf_s(buffer, "%d", number);
-		return strlen(buffer);
+		return std::to_string(number).length();
 	}
 
 	// determines the number files a source file needs to be split into
@@ -80,22 +79,22 @@ namespace split {
 
 	// splits a media file into chunks of a given duration
 	void split_single(
-		std::string const& ffmpeg_exe_dir,
-		std::string const& src_file_path,
-		std::string const& dst_full_path_base,
+		fs::path const& ffmpeg_exe_dir,
+		fs::path const& src_file_path,
+		fs::path const& dst_full_path_base,
 		std::string const& file_ext,
 		unsigned segment_sec)
 	{
 		// ffmpeg -i "input_audio_file.mp3" -f segment -segment_time 3600 -c copy output_audio_file_%03d.mp3
 
-		auto const src_duration = get_seconds(ffmpeg_exe_dir, src_file_path);
+		auto const src_duration = get_seconds(ffmpeg_exe_dir.string(), src_file_path.string());
 		auto const num_out_files = num_split_files(src_duration, segment_sec);
 		auto const digits = num_digits(num_out_files);
 
 		auto const command = 
-			ffmpeg_exe_dir + "ffmpeg -i " + "\"" + src_file_path + "\""
+			ffmpeg_exe_dir.string() + "ffmpeg -i " + "\"" + src_file_path.string() + "\""
 			+ " -f segment -segment_time " + std::to_string(segment_sec)
-			+ " -c copy " + "\"" + dst_full_path_base + "\"" + "_%0" + std::to_string(digits) + "d" + file_ext;
+			+ " -c copy " + "\"" + dst_full_path_base.string() + "\"" + "_%0" + std::to_string(digits) + "d" + file_ext;
 
 		system(command.c_str());
 	}
@@ -103,9 +102,9 @@ namespace split {
 
 	// splits a number of files into chunks of a given duration
 	void split_multiple(
-		std::string const& ffmpeg_exe_dir,
-		std::vector<std::string>& src_files,
-		std::string const& dst_dir,
+		fs::path const& ffmpeg_exe_dir,
+		std::vector<fs::path>& src_files,
+		fs::path const& dst_dir,
 		std::string const& dst_base_file,
 		std::string const& file_ext,
 		unsigned const segment_sec)
@@ -129,29 +128,32 @@ namespace split {
 
 		// split each file with temp names
 		// ffmpeg naming scheme is zero based
-		auto const temp_tag = "ffmpeg_" + ms.substr(ms.length() - 5) + "_temp_";
-		auto const temp_path_base = str::str_append_sub(dst_dir, temp_tag);
+		auto const file_name_base = "ffmpeg_" + ms.substr(ms.length() - 5) + "_temp_";
 
-		for (auto const& file_path : src_files) {
+		for (auto const& file_path : src_files) 
+		{
 			sprintf_s(idx_str, "%0*d", idx_len, idx++); // zero pad index number
-			auto const temp_path = temp_path_base + idx_str;
+			auto const file_name = file_name_base + idx_str;
+			auto const temp_path = dst_dir /  file_name;
 			split_single(ffmpeg_exe_dir, file_path, temp_path, file_ext, segment_sec);
 			memset(idx_str, 0, strlen(idx_str));
 		}
 
 
-		auto const entry_match = [&](fs::path const& entry) {
+		auto const entry_match = [&](fs::path const& entry) 
+		{
 			return fs::is_regular_file(entry) &&
 				entry.has_extension() &&
 				entry.extension() == file_ext &&
-				entry.filename().string()._Starts_with(temp_tag);
+				entry.filename().string()._Starts_with(file_name_base);
 		};
 
 		// get all of the files created
-		std::vector<std::string> file_list;
-		for (auto const& entry : fs::directory_iterator(dst_dir)) {
+		std::vector<fs::path> file_list;
+		for (auto const& entry : fs::directory_iterator(dst_dir)) 
+		{
 			if (entry_match(entry))
-				file_list.push_back(entry.path().string());
+				file_list.push_back(entry.path());
 		}
 
 		// sort alphabetically
@@ -160,31 +162,35 @@ namespace split {
 		// set track numbers and rename
 		idx_len = num_digits(file_list.size());
 		idx = 1;
-		auto const base_dir = str::str_append_sub(dst_dir, dst_base_file);
-		for (auto const& file_path : file_list) {
 
+		auto const create_tracks = [&](fs::path const& file_path)
+		{
 			// ffmpeg -i in.mp3 -metadata track="1/12" out.mp3
 
 			auto const track_part = " -metadata track=\""
 				+ std::to_string(idx) + "/" + std::to_string(file_list.size()) + "\" ";
 
 			sprintf_s(idx_str, "%0*d", idx_len, idx++);
-			auto const new_path = base_dir + "_" + idx_str + file_ext;
+
+			auto const file_name = dst_base_file + "_" + idx_str + file_ext;
+
+			auto const new_path = dst_dir / file_name;
 
 			memset(idx_str, 0, strlen(idx_str));
 
 			auto const command =
-				ffmpeg_exe_dir + "ffmpeg -i " + "\"" + file_path + "\""
+				ffmpeg_exe_dir.string() + "ffmpeg -i " + "\"" + file_path.string() + "\""
 				+ track_part
-				+ "\"" + new_path + "\"";
+				+ "\"" + new_path.string() + "\"";
 
 			// create new file with track number and new name
 			system(command.c_str());
 
 			// delete temp file
 			fs::remove(file_path);
-		}
+		};
 
+		std::for_each(file_list.begin(), file_list.end(), create_tracks);
 	}
 
 }

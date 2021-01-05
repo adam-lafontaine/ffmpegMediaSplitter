@@ -1,4 +1,4 @@
-#include<filesystem>
+
 #include<exception>
 #include<iostream>
 #include<string>
@@ -20,6 +20,8 @@ namespace fs = std::filesystem; // c++17
 namespace str = str_helper;
 namespace cvt = convert;
 
+
+
 std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension);
 void get_inputs();
 void show_inputs();
@@ -36,8 +38,8 @@ static unsigned segment_sec = SEGMENT_SEC_DEFAULT;
 static std::string ffmpeg_exe_dir = FFMPEG_EXE_DIR;
 
 
-int main() {
-
+int main() 
+{
 	if (!prompt_user())
 		return EXIT_SUCCESS;
 
@@ -47,8 +49,8 @@ int main() {
 
 //===================================
 
-bool split_files() {
-
+bool split_files() 
+{
 	try
 	{
 		auto file_list = get_files_of_type(src_dir, file_ext);
@@ -56,7 +58,7 @@ bool split_files() {
 
 		auto out_file_ext = file_ext;
 		bool converted = false;
-		auto temp_dst = str::str_append_sub(dst_dir, "convert_temp");
+		auto temp_dst = fs::path(dst_dir) / "convert_temp";
 
 		if (out_file_ext != MP3_EXT) { // try to convert everything to mp3
 			out_file_ext = MP3_EXT;
@@ -83,8 +85,8 @@ bool split_files() {
 	return true;
 }
 
-bool prompt_user() {
-
+bool prompt_user() 
+{
 	bool prompt = true;
 	bool quit = false;
 	std::string selection;
@@ -127,7 +129,8 @@ bool prompt_user() {
 }
 
 // display the inputs that the user chose/confirmed
-void show_inputs() {
+void show_inputs() 
+{
 	std::cout << "          ffmpeg location: " << ffmpeg_exe_dir << "\n";
 	std::cout << "           file extension: " << file_ext << "\n";
 	std::cout << "            file location: " << src_dir << "\n";
@@ -139,8 +142,8 @@ void show_inputs() {
 
 
 // prompt the user for required inputs
-void get_inputs() {
-
+void get_inputs() 
+{
 	std::string str;
 
 	std::cout << "Enter ffmpeg location (" << ffmpeg_exe_dir << "):\n";
@@ -181,8 +184,8 @@ void get_inputs() {
 
 // returns all files in a directory with a given extension
 // be careful pre c++11
-std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension) {
-
+std::vector<std::string> get_files_of_type(std::string const& src_dir, std::string& extension) 
+{
 	// extenstion must begin with '.'
 	if (extension[0] != '.')
 		extension = "." + extension;
