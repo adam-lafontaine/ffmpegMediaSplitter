@@ -14,15 +14,8 @@ namespace str_helper
 	// checks if a string ends with another string
 	bool str_ends_with(std::string const& full_string, std::string const& end);
 
-	// appends sub file/directory to a directory path string
-	//std::string str_append_sub(std::string const& parent_dir, std::string const& sub);
 
-
-
-	template<typename String>
-	std::string quoted(String const& str)
-	{
-		return "\"" + str + "\"";
-	}
+	
+	std::string quoted(std::string const& str);
 
 }

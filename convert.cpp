@@ -10,11 +10,11 @@ namespace convert {
 	namespace str = str_helper;
 
 	// gets the number of digits in an unsigned int
-	unsigned num_digits(unsigned const number) {
+	unsigned num_digits(size_t const number) {
 
 		char buffer[100];
 		sprintf_s(buffer, "%d", number);
-		return strlen(buffer);
+		return static_cast<unsigned>(strlen(buffer));
 	}
 
 	void convert_single(
@@ -24,8 +24,8 @@ namespace convert {
 	{
 		// ffmpeg -i "C:\path\to\input.m4b" -acodec libmp3lame -ar 22050 "C:\path\to\output.mp3"
 
-		auto const command = ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path)
-			+ " -acodec libmp3lame -ar 22050 " + str::quoted(dst_file_path);
+		auto const command = ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path.string())
+			+ " -acodec libmp3lame -ar 22050 " + str::quoted(dst_file_path.string());
 
 		system(command.c_str());
 	}

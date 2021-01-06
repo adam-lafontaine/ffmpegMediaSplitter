@@ -92,9 +92,9 @@ namespace split {
 		auto const digits = num_digits(num_out_files);
 
 		auto const command = 
-			ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path)
+			ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(src_file_path.string())
 			+ " -f segment -segment_time " + std::to_string(segment_sec)
-			+ " -c copy " + str::quoted(dst_full_path_base) + "_%0" + std::to_string(digits) + "d" + file_ext;
+			+ " -c copy " + str::quoted(dst_full_path_base.string()) + "_%0" + std::to_string(digits) + "d" + file_ext;
 
 		system(command.c_str());
 	}
@@ -173,12 +173,12 @@ namespace split {
 
 			auto const file_name = dst_base_file + "_" + idx_str + file_ext;
 
-			auto const new_path = dst_dir / file_name;
+			auto const new_path = (dst_dir / file_name).string();
 
 			memset(idx_str, 0, strlen(idx_str));
 
 			auto const command =
-				ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(file_path)
+				ffmpeg_exe_dir.string() + "ffmpeg -i " + str::quoted(file_path.string())
 				+ track_part
 				+ str::quoted(new_path);
 

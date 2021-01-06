@@ -49,35 +49,46 @@ int main()
 
 //===================================
 
+
 bool split_files() 
 {
-	auto const src_dir = fs::path(src_dir_in);
-	if (!fs::exists(src_dir) || !fs::is_directory(src_dir))
+	auto src_dir = fs::path(src_dir_in);
+	auto const ffmpeg_dir = fs::path(ffmpeg_exe_dir_in);
+
+	if (segment_sec_in == 0
+		|| !fs::exists(src_dir) 
+		|| !fs::is_directory(src_dir)
+		|| !fs::exists(ffmpeg_dir)
+		|| !fs::is_directory(ffmpeg_dir)
+		)
 		return false;
 
+	auto const dst_dir = fs::path(dst_dir_in);
+
+	std::string out_file_ext = MP3_EXT; // try to convert everything to mp3
+
+	bool to_convert = file_ext_in != out_file_ext;
+
 	try
-	{
-		auto file_list = get_files_of_type(src_dir, file_ext_in);
+	{		
 		fs::create_directories(dst_dir_in);
 
-		auto const dst_dir = fs::path(dst_dir_in);
-
-		std::string out_file_ext = MP3_EXT; // try to convert everything to mp3
-		bool converted = false;
-		auto temp_dst = fs::path(dst_dir) / "convert_temp";
-
-			converted = true;
-
+		if (to_convert)
+		{
+			auto file_list = get_files_of_type(src_dir, file_ext_in);
+			auto temp_dst = dst_dir / "convert_temp";
 			fs::create_directory(temp_dst);
+			cvt::convert_multiple(ffmpeg_dir, file_list, temp_dst, out_file_ext);
 
-			cvt::convert_multiple(ffmpeg_exe_dir, file_list, temp_dst, out_file_ext);
+			src_dir = temp_dst;
 		}
+		
+		auto file_list = get_files_of_type(src_dir, out_file_ext);
+		split::split_multiple(ffmpeg_dir, file_list, dst_dir, base_name_in, out_file_ext, segment_sec_in);
 
-		split::split_multiple(ffmpeg_exe_dir, file_list, dst_dir, base_name, out_file_ext, segment_sec);
+		if (to_convert) { // get rid of the converted files
 
-		if (converted) { // get rid of the converted files
-
-			fs::remove_all(temp_dst);
+			fs::remove_all(src_dir);
 		}
 	}
 	catch (std::exception & e)

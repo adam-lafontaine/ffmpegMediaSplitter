@@ -1,5 +1,6 @@
-#include<algorithm>
 #include "str_helper.hpp"
+
+#include<algorithm>
 
 namespace str_helper 
 {
@@ -19,20 +20,14 @@ namespace str_helper
 	// checks if a string ends with another string
 	bool str_ends_with(std::string const& full_string, std::string const& end) 
 	{
-
 		return end.length() <= full_string.length() &&
 			full_string.compare(full_string.length() - end.length(), end.length(), end) == 0;
-
 	}
 
 
-	
-
-	// appends sub file/directory to a directory path string
-	/*std::string str_append_sub(std::string const& parent_dir, std::string const& sub) 
+	std::string quoted(std::string const& str)
 	{
-		constexpr auto slash = R"(\)";
-		return str_ends_with(parent_dir, slash) ? parent_dir + sub : parent_dir + slash + sub;
-	}*/
+		return std::string("\"") + str + "\"";
+	}
 
 }
