@@ -1,14 +1,12 @@
+#include "app_config.hpp"
+#include "str_helper.hpp"
+#include "split.hpp"
+#include "convert.hpp"
 
 #include<exception>
 #include<iostream>
 #include<string>
 #include<vector>
-
-
-#include "app_config.hpp"
-#include "str_helper.hpp"
-#include "split.hpp"
-#include "convert.hpp"
 
 /*
 LICENSE INFO:

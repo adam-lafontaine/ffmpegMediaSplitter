@@ -11,11 +11,13 @@ namespace str_helper
 		return str.empty() || std::all_of(str.begin(), str.end(), isspace);
 	}
 
+
 	// returns true if a string represents and unsigned int
 	bool str_is_unsigned(std::string const& str) 
 	{
 		return std::all_of(str.begin(), str.end(), isdigit);
 	}
+
 
 	// checks if a string ends with another string
 	bool str_ends_with(std::string const& full_string, std::string const& end) 
@@ -25,6 +27,7 @@ namespace str_helper
 	}
 
 
+	// wraps a string in quotes
 	std::string quoted(std::string const& str)
 	{
 		return std::string("\"") + str + "\"";
