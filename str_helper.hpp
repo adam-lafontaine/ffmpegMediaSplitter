@@ -14,8 +14,7 @@ namespace str_helper
 	// checks if a string ends with another string
 	bool str_ends_with(std::string const& full_string, std::string const& end);
 
-
-	
+	// wraps a string in quotes
 	std::string quoted(std::string const& str);
 
 }
