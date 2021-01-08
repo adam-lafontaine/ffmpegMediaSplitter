@@ -6,8 +6,8 @@
 
 namespace fs = std::filesystem;
 
-namespace convert {
-
+namespace convert 
+{
 	void convert_multiple(
 		fs::path const& ffmpeg_exe_dir,
 		std::vector<fs::path>& src_files,
