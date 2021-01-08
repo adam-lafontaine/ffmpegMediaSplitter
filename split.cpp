@@ -12,7 +12,7 @@ namespace chrono = std::chrono;
 namespace str = str_helper;
 namespace pfm = platform;
 
-// returns console output of a system command as a string
+
 
 
 // gets the duration in seconds from a media file
@@ -32,6 +32,7 @@ static unsigned num_digits(unsigned const number) {
 
 	return static_cast<unsigned>(std::to_string(number).length());
 }
+
 
 // determines the number files a source file needs to be split into
 static unsigned num_split_files(double const src_duration, double const split_duration) {
@@ -69,7 +70,7 @@ static void split_single(
 		+ " -f segment -segment_time "
 		+ std::to_string(segment_sec)
 		+ " -c copy "
-		+ str::quoted(dst_full_path_base.string())
+		+ dst_full_path_base.string()
 		+ "_%0" + std::to_string(digits)
 		+ "d"
 		+ file_ext;
@@ -146,7 +147,7 @@ namespace split
 		{
 			// ffmpeg -i in.mp3 -metadata track="1/12" out.mp3
 
-			auto const track_part = " -metadata track=" + str::quoted( std::to_string(file_id) + "/" + std::to_string(file_list.size()) );				
+			auto const track_part = " -metadata track=" + str::quoted( std::to_string(file_id) + "/" + std::to_string(file_list.size()) ) + " ";				
 
 			sprintf_s(file_id_str, "%0*d", file_id_len, file_id++);
 
