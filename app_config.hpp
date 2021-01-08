@@ -3,10 +3,10 @@
 // Windows file path
 // Or add ffmpeg to PATH and change ffmpeg_exE_dir to "ffmpeg"
 // Should work for Linux as well (not tested)
-constexpr auto FFMPEG_EXE_DIR = R"(C:\ffmpeg\ffmpeg-4.2.1-win64-static\bin\)";
+constexpr auto FFMPEG_EXE_DIR = R"(D:\ffmpeg\bin\)";
 
 // default directory to look for audio files (for testing)
-constexpr auto SRC_DIR_DEFAULT = R"(C:\ffmpeg\ffmpeg-4.2.1-win64-static\bin\)";
+constexpr auto SRC_DIR_DEFAULT = R"(D:\ffmpeg\test_media\)";
 
 constexpr auto FILE_NAME_BASE_DEFAULT = "split";
 

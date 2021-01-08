@@ -2,12 +2,15 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
-namespace convert {
+namespace fs = std::filesystem;
 
+namespace convert 
+{
 	void convert_multiple(
-		std::string const& ffmpeg_exe_dir,
-		std::vector<std::string>& src_files,
-		std::string const& dst_dir,
+		fs::path const& ffmpeg_exe_dir,
+		std::vector<fs::path>& src_files,
+		fs::path const& dst_dir,
 		std::string const& out_ext);
 }
