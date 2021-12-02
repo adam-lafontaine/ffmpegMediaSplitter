@@ -1,7 +1,7 @@
 #pragma once
 
 // Windows file path
-// Or add ffmpeg to PATH and change ffmpeg_exE_dir to "ffmpeg"
+// Or add ffmpeg to PATH and change ffmpeg_exe_dir to "ffmpeg"
 // Should work for Linux as well (not tested)
 constexpr auto FFMPEG_EXE_DIR = R"(D:\ffmpeg\bin\)";
 
