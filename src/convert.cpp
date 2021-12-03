@@ -1,7 +1,7 @@
 #include "convert.hpp"
 #include "str_helper.hpp"
 
-#include<algorithm>
+#include <algorithm>
 #include <chrono>
 
 namespace chrono = std::chrono;
@@ -48,7 +48,7 @@ namespace convert
 		std::sort(src_files.begin(), src_files.end());
 
 		// get max length of index number
-		auto const file_id_len = num_digits(src_files.size());
+		auto const file_id_len = num_digits(static_cast<unsigned>(src_files.size()));
 
 		unsigned file_id = 1;
 		char file_id_str[100];

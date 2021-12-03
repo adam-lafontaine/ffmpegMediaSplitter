@@ -63,6 +63,8 @@ static void split_single(
 	auto const num_out_files = num_split_files(src_duration, segment_sec);
 	auto const digits = num_digits(num_out_files);
 
+
+
 	auto const command =
 		ffmpeg_exe_dir.string()
 		+ "ffmpeg -i "
@@ -97,7 +99,7 @@ namespace split
 		std::sort(src_files.begin(), src_files.end());
 
 		// get max length of index number
-		auto file_id_len = num_digits(src_files.size());
+		auto file_id_len = num_digits(static_cast<unsigned>(src_files.size()));
 
 		unsigned file_id = 1;
 		char file_id_str[100];
@@ -140,7 +142,7 @@ namespace split
 		std::sort(file_list.begin(), file_list.end());
 
 		// set track numbers and rename
-		file_id_len = num_digits(file_list.size());
+		file_id_len = num_digits(static_cast<unsigned>(file_list.size()));
 		file_id = 1;
 
 		auto const create_tracks = [&](fs::path const& file_path)
